@@ -37,7 +37,13 @@ export async function POST(req: Request) {
       ]
     });
 
-    const cleanJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // TYPE SAFETY FIX: Check if text exists before manipulating it
+    const text = response.text;
+    if (!text) {
+      throw new Error("Gemini returned an empty response");
+    }
+
+    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return NextResponse.json(JSON.parse(cleanJson));
 
   } catch (error) {
