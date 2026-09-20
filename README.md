@@ -12,4 +12,3 @@ VyaparVision uses Google Gemini Vision to instantly translate handwritten region
 * **Frontend:** Next.js (App Router), Tailwind CSS, Recharts
 * **AI Engine:** Google Gemini 2.5 Flash Vision API
 * **Deployment:** Vercel
-* 
