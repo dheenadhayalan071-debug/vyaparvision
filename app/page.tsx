@@ -1,12 +1,11 @@
 "use client";
 import { useState } from 'react';
-import { Camera, Store, BookOpen, Share2, MessageCircle, ArrowRight, Image as ImageIcon, ShoppingCart, Plus, Minus, MapPin, BarChart3, TrendingUp } from 'lucide-react';
+import { Camera, Store, BookOpen, Share2, MessageCircle, ArrowRight, Image as ImageIcon, ShoppingCart, Plus, Minus, MapPin, BarChart3, TrendingUp, Eye } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Item { item: string; localName: string; estimatedPriceINR: number; }
 interface Khata { customerName: string; udharAmountINR: number; notes: string; }
 
-// Dummy Data for the beautiful startup dashboard
 const analyticsData = [
   { day: 'Mon', sales: 1200, credit: 400 },
   { day: 'Tue', sales: 2100, credit: 800 },
@@ -86,6 +85,7 @@ export default function VyaparVisionUI() {
   const cartTotal = data?.inventory.reduce((sum, item) => sum + (item.estimatedPriceINR * (cart[item.item] || 0)), 0) || 0;
   const totalItems = Object.values(cart).reduce((a, b) => a + b, 0);
 
+  // --- ACTIONS ---
   const sendOrderToWhatsApp = (paymentMethod: string) => {
     if (!data) return;
     let orderText = `*New Order from ${customerName || "Customer"}*%0A%0A`;
@@ -94,6 +94,16 @@ export default function VyaparVisionUI() {
     });
     orderText += `%0A*Total: ₹${cartTotal}*%0A*Fulfillment:* In-Store Pickup%0A*Payment:* ${paymentMethod}`;
     window.open(`https://wa.me/?text=${orderText}`, '_blank');
+  };
+
+  const shareStoreLink = () => {
+    const text = encodeURIComponent("Welcome to my digital Kirana store! Order groceries online directly here: https://vyapar.in/store");
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const sendKhataReminder = (customer: string, amount: number) => {
+    const text = encodeURIComponent(`Hello ${customer}, your pending Udhar (credit) amount is ₹${amount}. Please pay using this UPI link: upi://pay?pa=shop@upi&pn=VyaparStore&am=${amount}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   // --- CUSTOMER VIEW UI ---
@@ -183,7 +193,6 @@ export default function VyaparVisionUI() {
 
         {data && (
           <div className="animate-in slide-in-from-bottom-4 duration-500">
-            {/* 3-Way Toggle Navigation */}
             <div className="flex bg-white rounded-xl shadow-sm p-1 mb-4 border border-gray-100">
               <button onClick={() => setActiveTab('store')} className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1 transition-all ${activeTab === 'store' ? 'bg-orange-100 text-orange-700' : 'text-gray-500'}`}>
                 <Store size={14} /> Store
@@ -201,9 +210,14 @@ export default function VyaparVisionUI() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 bg-orange-50 border-b border-orange-100 flex justify-between items-center">
                   <h2 className="font-bold text-gray-800">Your Catalog</h2>
-                  <button onClick={() => setViewMode('customer')} className="bg-green-500 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-1 font-bold shadow-sm hover:bg-green-600 transition">
-                    <Share2 size={14} /> Share & Preview
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={shareStoreLink} className="bg-[#25D366] text-white text-[11px] px-2 py-2 rounded-lg flex items-center gap-1 font-bold shadow-sm hover:bg-green-600 transition">
+                      <Share2 size={12} /> Share
+                    </button>
+                    <button onClick={() => setViewMode('customer')} className="bg-gray-800 text-white text-[11px] px-2 py-2 rounded-lg flex items-center gap-1 font-bold shadow-sm hover:bg-gray-900 transition">
+                      <Eye size={12} /> Preview
+                    </button>
+                  </div>
                 </div>
                 <div className="divide-y divide-gray-50">
                   {data.inventory.map((item, idx) => (
@@ -235,14 +249,19 @@ export default function VyaparVisionUI() {
                         </div>
                         <p className="font-extrabold text-red-600">₹{k.udharAmountINR}</p>
                       </div>
-                      <button className="w-full bg-[#25D366] text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><MessageCircle size={14} /> Send UPI Link</button>
+                      <button 
+                        onClick={() => sendKhataReminder(k.customerName, k.udharAmountINR)}
+                        className="w-full bg-[#25D366] text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        <MessageCircle size={14} /> Send UPI Link via WA
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* TAB 3: ANALYTICS (The Startup Pivot) */}
+            {/* TAB 3: ANALYTICS */}
             {activeTab === 'analytics' && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-5">
                 <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><TrendingUp size={20} className="text-blue-600"/> Weekly Performance</h2>
@@ -278,4 +297,4 @@ export default function VyaparVisionUI() {
     </div>
   );
             }
-           
+              
